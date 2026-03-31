@@ -1,27 +1,3 @@
---[[
-    DumperUI v1.1
-    Módulo de interface para Dumper Pro — posicionamento corrigido + visual refinado
-    Carrega via: local UI = loadstring(game:HttpGet("url"))()
-    
-    API retornada (inalterada):
-        UI:GetConfig()         → tabela com todas as configs
-        UI:SetFolder(name)     → atualiza campo de pasta
-        UI:Log(msg, color)     → escreve no terminal
-        UI:SetProgress(c, m)   → barra de progresso
-        UI:SetStats(t)         → atualiza métricas
-        UI:SetPhase(text)      → fase atual
-        UI:SetRunning(bool)    → alterna Start/Stop + badge
-        UI:SetBadge(text, col) → badge customizado
-        UI:SetStatus(text)     → barra inferior
-        UI:ClearLog()          → limpa terminal
-        UI:ShowPage(n)         → 1=config, 2=scanner
-        UI:Destroy()           → remove tudo
-        
-        UI.OnStart             → callback
-        UI.OnStop              → callback
-        UI.OnSaveInstance      → callback
-]]
-
 local TS      = game:GetService("TweenService")
 local UIS     = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -74,26 +50,26 @@ local Fc = Enum.Font.RobotoMono
 -- ═══════════════════════════════════════════
 
 local config = {
-    folder      = "",
-    mode        = "safe",
-    saveMode    = "individual",
-    dumpLocal   = true,
-    dumpModule  = true,
+    folder       = "",
+    mode         = "safe",
+    saveMode     = "individual",
+    dumpLocal    = true,
+    dumpModule   = true,
     dumpDisabled = true,
-    scanNil     = true,
-    scanGC      = true,
-    scanReg     = true,
-    scanThreads = false,
-    scanRunning = true,
-    scanLoaded  = true,
-    scanConn    = true,
-    scanAll     = false,
-    dumpRemotes = true,
-    dumpHooks   = true,
-    dumpUI      = true,
-    dumpInfo    = true,
-    dumpConsts  = false,
-    dumpUpvals  = false,
+    scanNil      = true,
+    scanGC       = true,
+    scanReg      = true,
+    scanThreads  = false,
+    scanRunning  = true,
+    scanLoaded   = true,
+    scanConn     = true,
+    scanAll      = false,
+    dumpRemotes  = true,
+    dumpHooks    = true,
+    dumpUI       = true,
+    dumpInfo     = true,
+    dumpConsts   = false,
+    dumpUpvals   = false,
 }
 
 pcall(function()
@@ -144,19 +120,19 @@ end
 
 local function section(parent, text, order)
     local f = mk("Frame", {
-        Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1,
         LayoutOrder = order, Parent = parent,
     })
+    local dot = mk("Frame", {
+        Size = UDim2.new(0, 3, 0, 3), Position = UDim2.new(0, 0, 0, 10),
+        BackgroundColor3 = P.acc, Parent = f,
+    })
+    rnd(dot, UDim.new(0, 2))
     mk("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 0, 4),
+        Size = UDim2.new(1, -10, 0, 14), Position = UDim2.new(0, 9, 0, 4),
         BackgroundTransparency = 1, Text = text:upper(),
         TextColor3 = P.t3, TextSize = 10, Font = Fb,
         TextXAlignment = Enum.TextXAlignment.Left, Parent = f,
-    })
-    mk("Frame", {
-        Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1),
-        BackgroundColor3 = P.brd, BackgroundTransparency = 0.5,
-        BorderSizePixel = 0, Parent = f,
     })
 end
 
@@ -168,59 +144,52 @@ local function toggle(parent, label, key, order)
         Text = "", AutoButtonColor = false, LayoutOrder = order, Parent = parent,
     })
 
-    local box = mk("Frame", {
-        Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 2, 0.5, -7),
-        BackgroundColor3 = val and P.acc or P.bg,
-        BackgroundTransparency = val and 0 or 0.5, Parent = row,
-    })
-    rnd(box, UDim.new(0, 3))
-    local boxStroke = stk(box, val and P.acc or P.brd)
-
-    local check = mk("TextLabel", {
-        Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-        Text = val and "✓" or "", TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 10, Font = Fb, Parent = box,
-    })
-
     local lbl = mk("TextLabel", {
-        Size = UDim2.new(1, -24, 1, 0), Position = UDim2.new(0, 24, 0, 0),
-        BackgroundTransparency = 1, Text = label, TextColor3 = val and P.t1 or P.t2,
-        TextSize = 12, Font = Fr, TextXAlignment = Enum.TextXAlignment.Left,
+        Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 2, 0, 0),
+        BackgroundTransparency = 1, Text = label,
+        TextColor3 = val and P.t1 or P.t2, TextSize = 12, Font = Fr,
+        TextXAlignment = Enum.TextXAlignment.Left,
         TextTruncate = Enum.TextTruncate.AtEnd, Parent = row,
     })
 
-    row.MouseEnter:Connect(function()
-        if not config[key] then TS:Create(box, ti(0.1), {BackgroundTransparency = 0.3}):Play() end
-    end)
-    row.MouseLeave:Connect(function()
-        if not config[key] then TS:Create(box, ti(0.1), {BackgroundTransparency = 0.5}):Play() end
-    end)
+    local track = mk("Frame", {
+        Size = UDim2.new(0, 28, 0, 14), Position = UDim2.new(1, -30, 0.5, -7),
+        BackgroundColor3 = val and P.acc or P.elev, Parent = row,
+    })
+    rnd(track, UDim.new(0, 7))
+
+    local knob = mk("Frame", {
+        Size = UDim2.new(0, 10, 0, 10),
+        Position = val and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5),
+        BackgroundColor3 = Color3.new(1, 1, 1), Parent = track,
+    })
+    rnd(knob, UDim.new(0, 5))
+
+    row.MouseEnter:Connect(function() lbl.TextColor3 = P.t1 end)
+    row.MouseLeave:Connect(function() lbl.TextColor3 = config[key] and P.t1 or P.t2 end)
 
     row.MouseButton1Click:Connect(function()
         val = not val; config[key] = val
-        TS:Create(box, ti(), {
-            BackgroundColor3 = val and P.acc or P.bg,
-            BackgroundTransparency = val and 0 or 0.5,
+        TS:Create(track, ti(), {BackgroundColor3 = val and P.acc or P.elev}):Play()
+        TS:Create(knob, ti(), {
+            Position = val and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5),
         }):Play()
-        boxStroke.Color = val and P.acc or P.brd
-        check.Text = val and "✓" or ""
         lbl.TextColor3 = val and P.t1 or P.t2
     end)
 end
 
 local function cards(parent, key, opts, order)
     local frame = mk("Frame", {
-        Size = UDim2.new(1, 0, 0, 68), BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 56), BackgroundTransparency = 1,
         LayoutOrder = order, Parent = parent,
     })
 
     local items = {}
-    local gap = 6
     for i, opt in ipairs(opts) do
         local sel = config[key] == opt.id
         local card = mk("TextButton", {
-            Size = UDim2.new(0.5, -gap / 2, 1, 0),
-            Position = UDim2.new((i - 1) * 0.5, i == 1 and 0 or gap / 2, 0, 0),
+            Size = UDim2.new(0.5, -3, 1, 0),
+            Position = UDim2.new((i - 1) * 0.5, i == 1 and 0 or 3, 0, 0),
             BackgroundColor3 = sel and P.elev or P.card,
             Text = "", AutoButtonColor = false, Parent = frame,
         })
@@ -228,38 +197,48 @@ local function cards(parent, key, opts, order)
         local s = stk(card, sel and P.acc or P.brd)
 
         local ttl = mk("TextLabel", {
-            Size = UDim2.new(1, -12, 0, 18), Position = UDim2.new(0, 6, 0, 10),
+            Size = UDim2.new(1, -28, 0, 16), Position = UDim2.new(0, 8, 0, 8),
             BackgroundTransparency = 1, Text = opt.title,
-            TextColor3 = sel and P.t1 or P.t2, TextSize = 13, Font = Fb,
+            TextColor3 = sel and P.t1 or P.t2, TextSize = 12, Font = Fb,
             TextXAlignment = Enum.TextXAlignment.Left, Parent = card,
         })
         mk("TextLabel", {
-            Size = UDim2.new(1, -12, 0, 12), Position = UDim2.new(0, 6, 0, 30),
+            Size = UDim2.new(1, -16, 0, 12), Position = UDim2.new(0, 8, 0, 26),
             BackgroundTransparency = 1, Text = opt.desc,
-            TextColor3 = P.t3, TextSize = 10, Font = Fc,
+            TextColor3 = P.t3, TextSize = 9, Font = Fc,
             TextXAlignment = Enum.TextXAlignment.Left, Parent = card,
         })
 
-        local radio = mk("Frame", {
-            Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(0, 8, 0, 50),
+        local dot = mk("Frame", {
+            Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(1, -16, 0, 12),
             BackgroundColor3 = sel and P.acc or P.brd, Parent = card,
         })
-        rnd(radio, UDim.new(0, 5))
+        rnd(dot, UDim.new(0, 4))
 
         if opt.badge then
             local bc = opt.badge == "SLOW" and P.wrn or P.inf
-            local b = mk("TextLabel", {
-                Size = UDim2.new(0, 36, 0, 14), Position = UDim2.new(1, -42, 0, 8),
-                BackgroundColor3 = bc, BackgroundTransparency = 0.8,
-                Text = opt.badge, TextColor3 = bc, TextSize = 9, Font = Fb, Parent = card,
+            local bg = mk("TextLabel", {
+                Size = UDim2.new(0, 34, 0, 14), Position = UDim2.new(0, 8, 1, -20),
+                BackgroundColor3 = bc, BackgroundTransparency = 0.85,
+                Text = opt.badge, TextColor3 = bc, TextSize = 8, Font = Fb, Parent = card,
             })
-            rnd(b, UDim.new(0, 3))
+            rnd(bg, UDim.new(0, 3))
         end
 
-        items[i] = {btn = card, stk = s, ttl = ttl, radio = radio}
+        items[i] = {btn = card, stk = s, ttl = ttl, dot = dot}
     end
 
     for i, it in ipairs(items) do
+        it.btn.MouseEnter:Connect(function()
+            if config[key] ~= opts[i].id then
+                TS:Create(it.btn, ti(0.1), {BackgroundColor3 = P.elev}):Play()
+            end
+        end)
+        it.btn.MouseLeave:Connect(function()
+            if config[key] ~= opts[i].id then
+                TS:Create(it.btn, ti(0.1), {BackgroundColor3 = P.card}):Play()
+            end
+        end)
         it.btn.MouseButton1Click:Connect(function()
             config[key] = opts[i].id
             for j, it2 in ipairs(items) do
@@ -267,7 +246,7 @@ local function cards(parent, key, opts, order)
                 TS:Create(it2.btn, ti(), {BackgroundColor3 = s and P.elev or P.card}):Play()
                 it2.stk.Color = s and P.acc or P.brd
                 it2.ttl.TextColor3 = s and P.t1 or P.t2
-                TS:Create(it2.radio, ti(), {BackgroundColor3 = s and P.acc or P.brd}):Play()
+                TS:Create(it2.dot, ti(), {BackgroundColor3 = s and P.acc or P.brd}):Play()
             end
         end)
     end
@@ -292,8 +271,8 @@ if not gui.Parent then gui.Parent = LP:WaitForChild("PlayerGui") end
 -- ═══════════════════════════════════════════
 
 local WIN_W, WIN_H = 660, 430
-local HDR_H = 42
-local SIDE_W = 42
+local HDR_H = 44
+local SIDE_W = 44
 local fullSize = UDim2.new(0, WIN_W, 0, WIN_H)
 
 local win = mk("Frame", {
@@ -305,21 +284,14 @@ local win = mk("Frame", {
 rnd(win, UDim.new(0, 10))
 stk(win)
 
--- accent stripe
 mk("Frame", {
     Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = P.acc,
     BorderSizePixel = 0, Parent = win,
 })
 
 -- ═══════════════════════════════════════════
---  HEADER  (buttons laid out right→left, no overlap)
+--  HEADER
 -- ═══════════════════════════════════════════
---  Layout verification (window 660 px wide):
---    btnX     28 px  @ (1,-36)  → pixels 624-652   ✓
---    btnMin   28 px  @ (1,-70)  → pixels 590-618   gap 6 ✓
---    btnStart 100 px @ (1,-180) → pixels 480-580   gap 10 ✓
---    btnSave  92 px  @ (1,-280) → pixels 380-472   gap 8 ✓
---    badge    52 px  @ (0,164)  → pixels 164-216   gap 164 ✓
 
 local hdr = mk("Frame", {
     Size = UDim2.new(1, 0, 0, HDR_H), Position = UDim2.new(0, 0, 0, 2),
@@ -330,370 +302,396 @@ mk("Frame", {
     BackgroundColor3 = P.brd, BorderSizePixel = 0, Parent = hdr,
 })
 
+local logoDot = mk("Frame", {
+    Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(0, 14, 0.5, -4),
+    BackgroundColor3 = P.acc, Parent = hdr,
+})
+rnd(logoDot, UDim.new(0, 4))
+
 mk("TextLabel", {
-    Size = UDim2.new(0, 120, 1, 0), Position = UDim2.new(0, 14, 0, 0),
-    BackgroundTransparency = 1, Text = "◆ DUMPER PRO",
-    TextColor3 = P.t1, TextSize = 14, Font = Fb,
-    TextXAlignment = Enum.TextXAlignment.Left, Parent = hdr,
+    Size = UDim2.new(0, 120, 1, 0), Position = UDim2.new(0, 28, 0, 0),
+    BackgroundTransparency = 1, Text = "DUMPER PRO",
+    TextColor3 = P.t1, TextSize = 15, Font = Fb,
+TextXAlignment = Enum.TextXAlignment.Left, Parent = hdr,
 })
 mk("TextLabel", {
-    Size = UDim2.new(0, 20, 1, 0), Position = UDim2.new(0, 136, 0, 1),
-    BackgroundTransparency = 1, Text = "v5",
-    TextColor3 = P.t3, TextSize = 9, Font = Fc,
-    TextXAlignment = Enum.TextXAlignment.Left, Parent = hdr,
+Size = UDim2.new(0, 20, 1, 0), Position = UDim2.new(0, 138, 0, 1),
+BackgroundTransparency = 1, Text = "v5",
+TextColor3 = P.t3, TextSize = 9, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, Parent = hdr,
 })
 
 local badge = mk("TextLabel", {
-    Size = UDim2.new(0, 52, 0, 20), Position = UDim2.new(0, 164, 0.5, -10),
-    BackgroundColor3 = P.ok, BackgroundTransparency = 0.82,
-    Text = "Ready", TextColor3 = P.ok, TextSize = 10, Font = Fm, Parent = hdr,
+Size = UDim2.new(0, 48, 0, 18), Position = UDim2.new(0, 166, 0.5, -9),
+BackgroundColor3 = P.ok, BackgroundTransparency = 0.82,
+Text = "Ready", TextColor3 = P.ok, TextSize = 9, Font = Fm, Parent = hdr,
 })
 rnd(badge, UDim.new(0, 4))
 
 -- ── Header buttons (right → left) ──
 
 local btnX = mk("TextButton", {
-    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -36, 0.5, -14),
-    BackgroundColor3 = P.err, BackgroundTransparency = 0.6,
-    Text = "✕", TextColor3 = P.t1, TextSize = 11, Font = Fb,
-    AutoButtonColor = false, Parent = hdr,
+Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -36, 0.5, -14),
+BackgroundColor3 = P.err, BackgroundTransparency = 0.7,
+Text = "✕", TextColor3 = P.t1, TextSize = 11, Font = Fb,
+AutoButtonColor = false, Parent = hdr,
 })
 rnd(btnX)
 
 local btnMin = mk("TextButton", {
-    Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -70, 0.5, -14),
-    BackgroundColor3 = P.card, Text = "—", TextColor3 = P.t2,
-    TextSize = 13, Font = Fb, AutoButtonColor = false, Parent = hdr,
+Size = UDim2.new(0, 28, 0, 28), Position = UDim2.new(1, -70, 0.5, -14),
+BackgroundColor3 = P.card, Text = "—", TextColor3 = P.t2,
+TextSize = 13, Font = Fb, AutoButtonColor = false, Parent = hdr,
 })
 rnd(btnMin)
 
 local btnStart = mk("TextButton", {
-    Size = UDim2.new(0, 100, 0, 28), Position = UDim2.new(1, -180, 0.5, -14),
-    BackgroundColor3 = P.acc, Text = "▶  START", TextColor3 = Color3.new(1, 1, 1),
-    TextSize = 12, Font = Fb, AutoButtonColor = false, Parent = hdr,
+Size = UDim2.new(0, 100, 0, 28), Position = UDim2.new(1, -180, 0.5, -14),
+BackgroundColor3 = P.acc, Text = "▶ START", TextColor3 = Color3.new(1, 1, 1),
+TextSize = 12, Font = Fb, AutoButtonColor = false, Parent = hdr,
 })
 rnd(btnStart)
 
 local btnStop = mk("TextButton", {
-    Size = UDim2.new(0, 100, 0, 28), Position = UDim2.new(1, -180, 0.5, -14),
-    BackgroundColor3 = P.err, Text = "■  STOP", TextColor3 = Color3.new(1, 1, 1),
-    TextSize = 12, Font = Fb, AutoButtonColor = false, Visible = false, Parent = hdr,
+Size = UDim2.new(0, 100, 0, 28), Position = UDim2.new(1, -180, 0.5, -14),
+BackgroundColor3 = P.err, Text = "■ STOP", TextColor3 = Color3.new(1, 1, 1),
+TextSize = 12, Font = Fb, AutoButtonColor = false, Visible = false, Parent = hdr,
 })
 rnd(btnStop)
 
 local btnSave = mk("TextButton", {
-    Size = UDim2.new(0, 92, 0, 28), Position = UDim2.new(1, -280, 0.5, -14),
-    BackgroundColor3 = P.card, Text = "saveinstance", TextColor3 = P.t2,
-    TextSize = 10, Font = Fc, AutoButtonColor = false, Parent = hdr,
+Size = UDim2.new(0, 92, 0, 28), Position = UDim2.new(1, -282, 0.5, -14),
+BackgroundColor3 = P.card, Text = "saveinstance", TextColor3 = P.t2,
+TextSize = 10, Font = Fc, AutoButtonColor = false, Parent = hdr,
 })
 rnd(btnSave); stk(btnSave)
 
 -- ═══════════════════════════════════════════
---  SIDEBAR
+-- SIDEBAR
 -- ═══════════════════════════════════════════
 
+local FOOTER_H = 40
+
 local side = mk("Frame", {
-    Size = UDim2.new(0, SIDE_W, 1, -(HDR_H + 2 + 46)),
-    Position = UDim2.new(0, 0, 0, HDR_H + 2),
-    BackgroundColor3 = P.pnl, BorderSizePixel = 0, Parent = win,
+Size = UDim2.new(0, SIDE_W, 1, -(HDR_H + 2 + FOOTER_H)),
+Position = UDim2.new(0, 0, 0, HDR_H + 3),
+BackgroundColor3 = P.pnl, BorderSizePixel = 0, Parent = win,
 })
 mk("Frame", {
-    Size = UDim2.new(0, 1, 1, 0), Position = UDim2.new(1, 0, 0, 0),
-    BackgroundColor3 = P.brd, BorderSizePixel = 0, Parent = side,
+Size = UDim2.new(0, 1, 1, 0), Position = UDim2.new(1, 0, 0, 0),
+BackgroundColor3 = P.brd, BorderSizePixel = 0, Parent = side,
 })
 
 local indicator = mk("Frame", {
-    Size = UDim2.new(0, 3, 0, 18), Position = UDim2.new(0, 0, 0, 14),
-    BackgroundColor3 = P.acc, BorderSizePixel = 0, Parent = side,
+Size = UDim2.new(0, 3, 0, 18), Position = UDim2.new(0, 0, 0, 14),
+BackgroundColor3 = P.acc, BorderSizePixel = 0, Parent = side,
 })
 rnd(indicator, UDim.new(0, 1))
 
 local sideIcons = {"⚙", "▶"}
 local sideBtns = {}
 for i, icon in ipairs(sideIcons) do
-    sideBtns[i] = mk("TextButton", {
-        Size = UDim2.new(0, 30, 0, 30),
-        Position = UDim2.new(0.5, -15, 0, 8 + (i - 1) * 40),
-        BackgroundColor3 = i == 1 and P.acc or P.card,
-        BackgroundTransparency = i == 1 and 0.15 or 0.6,
-        Text = icon, TextColor3 = i == 1 and P.t1 or P.t2,
-        TextSize = 14, Font = Fr, AutoButtonColor = false, Parent = side,
-    })
-    rnd(sideBtns[i])
+sideBtns[i] = mk("TextButton", {
+Size = UDim2.new(0, 30, 0, 30),
+Position = UDim2.new(0.5, -15, 0, 8 + (i - 1) * 40),
+BackgroundColor3 = i == 1 and P.acc or P.card,
+BackgroundTransparency = i == 1 and 0.15 or 0.6,
+Text = icon, TextColor3 = i == 1 and P.t1 or P.t2,
+TextSize = 14, Font = Fr, AutoButtonColor = false, Parent = side,
+})
+rnd(sideBtns[i])
 end
 
 -- ═══════════════════════════════════════════
---  BODY
+-- BODY
 -- ═══════════════════════════════════════════
 
 local body = mk("Frame", {
-    Size = UDim2.new(1, -(SIDE_W + 8), 1, -(HDR_H + 2 + 46)),
-    Position = UDim2.new(0, SIDE_W + 4, 0, HDR_H + 2),
-    BackgroundTransparency = 1, ClipsDescendants = true, Parent = win,
+Size = UDim2.new(1, -(SIDE_W + 6), 1, -(HDR_H + 3 + FOOTER_H)),
+Position = UDim2.new(0, SIDE_W + 3, 0, HDR_H + 3),
+BackgroundTransparency = 1, ClipsDescendants = true, Parent = win,
 })
 
 -- ────────────────────────────────
---  PAGE 1 — CONFIG
+-- PAGE 1 — CONFIG
 -- ────────────────────────────────
 
 local pgCfg = mk("Frame", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Parent = body})
 
 local colL = mk("ScrollingFrame", {
-    Size = UDim2.new(0.46, 0, 1, 0), BackgroundTransparency = 1,
-    ScrollBarThickness = 2, ScrollBarImageColor3 = P.acc,
-    CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-    Parent = pgCfg,
+Size = UDim2.new(0.44, 0, 1, 0), BackgroundTransparency = 1,
+ScrollBarThickness = 2, ScrollBarImageColor3 = P.acc,
+CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+Parent = pgCfg,
 })
-pad(colL, 8, 8, 8, 4); lay(colL, 8)
+pad(colL, 6, 6, 8, 4); lay(colL, 6)
 
 local colR = mk("ScrollingFrame", {
-    Size = UDim2.new(0.54, -4, 1, 0), Position = UDim2.new(0.46, 4, 0, 0),
-    BackgroundTransparency = 1, ScrollBarThickness = 2, ScrollBarImageColor3 = P.acc,
-    CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-    Parent = pgCfg,
+Size = UDim2.new(0.56, -4, 1, 0), Position = UDim2.new(0.44, 4, 0, 0),
+BackgroundTransparency = 1, ScrollBarThickness = 2, ScrollBarImageColor3 = P.acc,
+CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+Parent = pgCfg,
 })
-pad(colR, 8, 8, 4, 8); lay(colR, 5)
+pad(colR, 6, 6, 4, 8); lay(colR, 4)
 
--- LEFT
+-- Separator line between columns
+mk("Frame", {
+Size = UDim2.new(0, 1, 1, -12), Position = UDim2.new(0.44, 1, 0, 6),
+BackgroundColor3 = P.brd, BackgroundTransparency = 0.5,
+BorderSizePixel = 0, Parent = pgCfg,
+})
+
+-- LEFT COLUMN
 
 section(colL, "Output", 1)
 
 mk("TextLabel", {
-    Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1,
-    Text = "Save name", TextColor3 = P.t2, TextSize = 11, Font = Fr,
-    TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 2, Parent = colL,
+Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1,
+Text = "Save name", TextColor3 = P.t2, TextSize = 11, Font = Fr,
+TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 2, Parent = colL,
 })
 
 local folderBox = mk("TextBox", {
-    Size = UDim2.new(1, 0, 0, 28), BackgroundColor3 = P.card,
-    Text = config.folder, PlaceholderText = "folder name...",
-    TextColor3 = P.t1, PlaceholderColor3 = P.t3,
-    TextSize = 11, Font = Fc, ClearTextOnFocus = false,
-    LayoutOrder = 3, Parent = colL,
+Size = UDim2.new(1, 0, 0, 26), BackgroundColor3 = P.card,
+Text = config.folder, PlaceholderText = "folder name...",
+TextColor3 = P.t1, PlaceholderColor3 = P.t3,
+TextSize = 11, Font = Fc, ClearTextOnFocus = false,
+LayoutOrder = 3, Parent = colL,
 })
 rnd(folderBox); stk(folderBox); pad(folderBox, 0, 0, 8, 8)
 
 local pathLbl = mk("TextLabel", {
-    Size = UDim2.new(1, 0, 0, 13), BackgroundTransparency = 1,
-    Text = "→ workspace/" .. config.folder .. "/",
-    TextColor3 = P.t3, TextSize = 9, Font = Fc,
-    TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 4, Parent = colL,
+Size = UDim2.new(1, 0, 0, 13), BackgroundTransparency = 1,
+Text = "→ workspace/" .. config.folder .. "/",
+TextColor3 = P.t3, TextSize = 9, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 4, Parent = colL,
 })
 
 folderBox.FocusLost:Connect(function()
-    config.folder = folderBox.Text
-    pathLbl.Text = "→ workspace/" .. folderBox.Text .. "/"
+config.folder = folderBox.Text
+pathLbl.Text = "→ workspace/" .. folderBox.Text .. "/"
 end)
 
 section(colL, "Mode", 10)
 cards(colL, "mode", {
-    {id = "safe",  title = "SAFE",  desc = "Stable · ~2-5 min", badge = "SLOW"},
-    {id = "turbo", title = "TURBO", desc = "Fast · ~30-90s",    badge = "FAST"},
+{id = "safe", title = "SAFE", desc = "Stable · ~2-5 min", badge = "SLOW"},
+{id = "turbo", title = "TURBO", desc = "Fast · ~30-90s", badge = "FAST"},
 }, 11)
 
 section(colL, "Format", 20)
 cards(colL, "saveMode", {
-    {id = "individual", title = "INDIVIDUAL", desc = "One file per script"},
-    {id = "single",     title = "SINGLE FILE", desc = "All in one .lua"},
+{id = "individual", title = "INDIVIDUAL", desc = "One file per script"},
+{id = "single", title = "SINGLE FILE", desc = "All in one .lua"},
 }, 21)
 
--- RIGHT
+-- RIGHT COLUMN
 
 section(colR, "Scripts", 1)
-toggle(colR, "LocalScripts",      "dumpLocal",    2)
-toggle(colR, "ModuleScripts",     "dumpModule",   3)
-toggle(colR, "Include disabled",  "dumpDisabled", 4)
+toggle(colR, "LocalScripts", "dumpLocal", 2)
+toggle(colR, "ModuleScripts", "dumpModule", 3)
+toggle(colR, "Include disabled", "dumpDisabled", 4)
 
-section(colR, "Deep scan — hidden / deleted / GC", 10)
-toggle(colR, "Nil instances (deleted)",   "scanNil",     11)
-toggle(colR, "Garbage collector",         "scanGC",      12)
-toggle(colR, "Lua registry",              "scanReg",     13)
-toggle(colR, "Threads / coroutines",      "scanThreads", 14)
-toggle(colR, "Running scripts",           "scanRunning", 15)
-toggle(colR, "Loaded modules",            "scanLoaded",  16)
-toggle(colR, "Event connections",         "scanConn",    17)
-toggle(colR, "All instances (full mem)",  "scanAll",     18)
+section(colR, "Deep scan", 10)
+toggle(colR, "Nil instances", "scanNil", 11)
+toggle(colR, "Garbage collector", "scanGC", 12)
+toggle(colR, "Lua registry", "scanReg", 13)
+toggle(colR, "Threads / coroutines", "scanThreads", 14)
+toggle(colR, "Running scripts", "scanRunning", 15)
+toggle(colR, "Loaded modules", "scanLoaded", 16)
+toggle(colR, "Event connections", "scanConn", 17)
+toggle(colR, "All instances", "scanAll", 18)
 
 section(colR, "Extras", 30)
-toggle(colR, "Remotes & bindables",  "dumpRemotes", 31)
-toggle(colR, "Hook detection",       "dumpHooks",   32)
-toggle(colR, "UI tree (PlayerGui)",  "dumpUI",      33)
-toggle(colR, "Game info file",       "dumpInfo",    34)
-toggle(colR, "Constants (debug)",    "dumpConsts",  35)
-toggle(colR, "Upvalues (debug)",     "dumpUpvals",  36)
+toggle(colR, "Remotes & bindables", "dumpRemotes", 31)
+toggle(colR, "Hook detection", "dumpHooks", 32)
+toggle(colR, "UI tree (PlayerGui)", "dumpUI", 33)
+toggle(colR, "Game info file", "dumpInfo", 34)
+toggle(colR, "Constants (debug)", "dumpConsts", 35)
+toggle(colR, "Upvalues (debug)", "dumpUpvals", 36)
 
 -- ────────────────────────────────
---  PAGE 2 — SCANNER
+-- PAGE 2 — SCANNER
 -- ────────────────────────────────
 
 local pgScan = mk("Frame", {
-    Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-    Visible = false, Parent = body,
+Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+Visible = false, Parent = body,
 })
 
 local statsBar = mk("Frame", {
-    Size = UDim2.new(1, -8, 0, 28), Position = UDim2.new(0, 4, 0, 4),
-    BackgroundColor3 = P.card, BorderSizePixel = 0, Parent = pgScan,
+Size = UDim2.new(1, -8, 0, 26), Position = UDim2.new(0, 4, 0, 4),
+BackgroundColor3 = P.card, BorderSizePixel = 0, Parent = pgScan,
 })
 rnd(statsBar); pad(statsBar, 0, 0, 10, 10)
 
 local statsLbl = mk("TextLabel", {
-    Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-    Text = "Found: 0   Done: 0   Failed: 0   Remotes: 0",
-    TextColor3 = P.t2, TextSize = 11, Font = Fc,
-    TextXAlignment = Enum.TextXAlignment.Left, Parent = statsBar,
+Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+Text = "Found: 0 Done: 0 Failed: 0 Remotes: 0",
+TextColor3 = P.t2, TextSize = 10, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, Parent = statsBar,
 })
 
 local phaseLbl = mk("TextLabel", {
-    Size = UDim2.new(1, -8, 0, 16), Position = UDim2.new(0, 4, 0, 36),
-    BackgroundTransparency = 1, Text = "Phase: idle",
-    TextColor3 = P.t3, TextSize = 10, Font = Fc,
-    TextXAlignment = Enum.TextXAlignment.Left, Parent = pgScan,
+Size = UDim2.new(1, -8, 0, 14), Position = UDim2.new(0, 4, 0, 34),
+BackgroundTransparency = 1, Text = "Phase: idle",
+TextColor3 = P.t3, TextSize = 9, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, Parent = pgScan,
 })
 
 mk("Frame", {
-    Size = UDim2.new(1, -8, 0, 1), Position = UDim2.new(0, 4, 0, 54),
-    BackgroundColor3 = P.brd, BackgroundTransparency = 0.4,
-    BorderSizePixel = 0, Parent = pgScan,
+Size = UDim2.new(1, -8, 0, 1), Position = UDim2.new(0, 4, 0, 50),
+BackgroundColor3 = P.brd, BackgroundTransparency = 0.4,
+BorderSizePixel = 0, Parent = pgScan,
 })
 
 local terminal = mk("ScrollingFrame", {
-    Size = UDim2.new(1, -8, 1, -60), Position = UDim2.new(0, 4, 0, 58),
-    BackgroundColor3 = P.card, ScrollBarThickness = 3, ScrollBarImageColor3 = P.acc,
-    CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-    Parent = pgScan,
+Size = UDim2.new(1, -8, 1, -56), Position = UDim2.new(0, 4, 0, 54),
+BackgroundColor3 = P.card, ScrollBarThickness = 3, ScrollBarImageColor3 = P.acc,
+CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+Parent = pgScan,
 })
 rnd(terminal); pad(terminal, 6, 6, 8, 8); lay(terminal, 2)
 
 local termIdx = 0
 
 -- ═══════════════════════════════════════════
---  BOTTOM BARS
+-- FOOTER (progress + status)
 -- ═══════════════════════════════════════════
 
-local progBg = mk("Frame", {
-    Size = UDim2.new(1, -12, 0, 14), Position = UDim2.new(0, 6, 1, -42),
-    BackgroundColor3 = P.card, BorderSizePixel = 0, Parent = win,
+local footer = mk("Frame", {
+Size = UDim2.new(1, 0, 0, FOOTER_H),
+Position = UDim2.new(0, 0, 1, -FOOTER_H),
+BackgroundColor3 = P.pnl, BorderSizePixel = 0, Parent = win,
 })
-rnd(progBg, UDim.new(0, 4))
+mk("Frame", {
+Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 0, 0),
+BackgroundColor3 = P.brd, BorderSizePixel = 0, Parent = footer,
+})
+
+local progBg = mk("Frame", {
+Size = UDim2.new(1, -16, 0, 10), Position = UDim2.new(0, 8, 0, 6),
+BackgroundColor3 = P.card, BorderSizePixel = 0, Parent = footer,
+})
+rnd(progBg, UDim.new(0, 5))
 
 local progFill = mk("Frame", {
-    Size = UDim2.new(0, 0, 1, 0), BackgroundColor3 = P.acc,
-    BorderSizePixel = 0, Parent = progBg,
+Size = UDim2.new(0, 0, 1, 0), BackgroundColor3 = P.acc,
+BorderSizePixel = 0, Parent = progBg,
 })
-rnd(progFill, UDim.new(0, 4))
+rnd(progFill, UDim.new(0, 5))
 
 local progLbl = mk("TextLabel", {
-    Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-    Text = "", TextColor3 = P.t1, TextSize = 9, Font = Fc,
-    ZIndex = 3, Parent = progBg,
+Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+Text = "", TextColor3 = P.t1, TextSize = 8, Font = Fc,
+ZIndex = 3, Parent = progBg,
 })
 
 local statusLbl = mk("TextLabel", {
-    Size = UDim2.new(1, -12, 0, 18), Position = UDim2.new(0, 6, 1, -24),
-    BackgroundTransparency = 1,
-    Text = "✓ Ready  ·  " .. config.folder .. "  ·  " .. execName .. "  ·  " .. game.PlaceId,
-    TextColor3 = P.t3, TextSize = 9, Font = Fc,
-    TextXAlignment = Enum.TextXAlignment.Left, Parent = win,
+Size = UDim2.new(1, -16, 0, 16), Position = UDim2.new(0, 8, 0, 20),
+BackgroundTransparency = 1,
+Text = "✓ Ready · " .. config.folder .. " · " .. execName .. " · " .. game.PlaceId,
+TextColor3 = P.t3, TextSize = 9, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, Parent = footer,
 })
 
 -- ═══════════════════════════════════════════
---  NAVIGATION
+-- NAVIGATION
 -- ═══════════════════════════════════════════
 
 local pages = {pgCfg, pgScan}
 local curPage = 1
 
 local function switchPage(idx)
-    curPage = idx
-    for i, pg in ipairs(pages) do pg.Visible = (i == idx) end
-    for i, btn in ipairs(sideBtns) do
-        TS:Create(btn, ti(), {
-            BackgroundColor3 = i == idx and P.acc or P.card,
-            BackgroundTransparency = i == idx and 0.15 or 0.6,
-        }):Play()
-        btn.TextColor3 = i == idx and P.t1 or P.t2
-    end
-    TS:Create(indicator, ti(0.18), {
-        Position = UDim2.new(0, 0, 0, 8 + (idx - 1) * 40 + 6),
-    }):Play()
+curPage = idx
+for i, pg in ipairs(pages) do pg.Visible = (i == idx) end
+for i, btn in ipairs(sideBtns) do
+TS:Create(btn, ti(), {
+BackgroundColor3 = i == idx and P.acc or P.card,
+BackgroundTransparency = i == idx and 0.15 or 0.6,
+}):Play()
+btn.TextColor3 = i == idx and P.t1 or P.t2
+end
+TS:Create(indicator, ti(0.18), {
+Position = UDim2.new(0, 0, 0, 8 + (idx - 1) * 40 + 6),
+}):Play()
 end
 
 for i, btn in ipairs(sideBtns) do
-    btn.MouseButton1Click:Connect(function() switchPage(i) end)
+btn.MouseButton1Click:Connect(function() switchPage(i) end)
 end
 
 -- ═══════════════════════════════════════════
---  DRAG
+-- DRAG
 -- ═══════════════════════════════════════════
 
 do
-    local dragging, dragStart, winStart
-    hdr.InputBegan:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1
-        or inp.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = inp.Position; winStart = win.Position
-            inp.Changed:Connect(function()
-                if inp.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    UIS.InputChanged:Connect(function(inp)
-        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
-        or inp.UserInputType == Enum.UserInputType.Touch) then
-            local d = inp.Position - dragStart
-            win.Position = UDim2.new(winStart.X.Scale, winStart.X.Offset + d.X,
-                                     winStart.Y.Scale, winStart.Y.Offset + d.Y)
-        end
-    end)
+local dragging, dragStart, winStart
+hdr.InputBegan:Connect(function(inp)
+if inp.UserInputType == Enum.UserInputType.MouseButton1
+or inp.UserInputType == Enum.UserInputType.Touch then
+dragging = true; dragStart = inp.Position; winStart = win.Position
+inp.Changed:Connect(function()
+if inp.UserInputState == Enum.UserInputState.End then dragging = false end
+end)
+end
+end)
+UIS.InputChanged:Connect(function(inp)
+if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
+or inp.UserInputType == Enum.UserInputType.Touch) then
+local d = inp.Position - dragStart
+win.Position = UDim2.new(winStart.X.Scale, winStart.X.Offset + d.X,
+winStart.Y.Scale, winStart.Y.Offset + d.Y)
+end
+end)
 end
 
 -- ═══════════════════════════════════════════
---  CONTROLS
+-- CONTROLS
 -- ═══════════════════════════════════════════
 
 local minimized = false
+local minSize = UDim2.new(0, WIN_W, 0, HDR_H + 4)
 
 btnMin.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    TS:Create(win, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-        Size = minimized and UDim2.new(0, WIN_W, 0, HDR_H + 2) or fullSize,
-    }):Play()
-    btnMin.Text = minimized and "+" or "—"
+minimized = not minimized
+TS:Create(win, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+Size = minimized and minSize or fullSize,
+}):Play()
+btnMin.Text = minimized and "+" or "—"
 end)
 
 btnX.MouseButton1Click:Connect(function()
-    TS:Create(win, TweenInfo.new(0.15), {Size = UDim2.new(0, WIN_W, 0, 0)}):Play()
-    task.wait(0.17); gui:Destroy()
+TS:Create(win, TweenInfo.new(0.15), {Size = UDim2.new(0, WIN_W, 0, 0)}):Play()
+task.wait(0.17); gui:Destroy()
 end)
 
 UIS.InputBegan:Connect(function(inp, gpe)
-    if gpe then return end
-    if inp.KeyCode == Enum.KeyCode.RightControl then win.Visible = not win.Visible end
+if gpe then return end
+if inp.KeyCode == Enum.KeyCode.RightControl then win.Visible = not win.Visible end
 end)
 
 for _, b in ipairs({btnStart, btnStop, btnSave, btnMin, btnX}) do
-    local orig = b.BackgroundTransparency
-    b.MouseEnter:Connect(function()
-        TS:Create(b, ti(0.1), {BackgroundTransparency = math.max(orig - 0.15, 0)}):Play()
-    end)
-    b.MouseLeave:Connect(function()
-        TS:Create(b, ti(0.1), {BackgroundTransparency = orig}):Play()
-    end)
+local orig = b.BackgroundTransparency
+b.MouseEnter:Connect(function()
+TS:Create(b, ti(0.1), {BackgroundTransparency = math.max(orig - 0.15, 0)}):Play()
+end)
+b.MouseLeave:Connect(function()
+TS:Create(b, ti(0.1), {BackgroundTransparency = orig}):Play()
+end)
 end
 
 -- ═══════════════════════════════════════════
---  OPEN ANIMATION
+-- OPEN ANIMATION
 -- ═══════════════════════════════════════════
 
 win.BackgroundTransparency = 1
 win.Size = UDim2.new(0, WIN_W, 0, 0)
 TS:Create(win, TweenInfo.new(0.35, Enum.EasingStyle.Back), {
-    Size = fullSize, BackgroundTransparency = 0,
+Size = fullSize, BackgroundTransparency = 0,
 }):Play()
 
 -- ═══════════════════════════════════════════
---  API  (todas as funções mantidas)
+-- API
 -- ═══════════════════════════════════════════
 
 local pulseActive = false
@@ -703,116 +701,116 @@ API.OnStop = nil
 API.OnSaveInstance = nil
 
 function API:GetConfig()
-    return config
+return config
 end
 
 function API:SetFolder(name)
-    config.folder = name
-    folderBox.Text = name
-    pathLbl.Text = "→ workspace/" .. name .. "/"
+config.folder = name
+folderBox.Text = name
+pathLbl.Text = "→ workspace/" .. name .. "/"
 end
 
 function API:Log(msg, color)
-    color = color or "white"
-    termIdx = termIdx + 1
-    mk("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1,
-        Text = "[" .. os.date("%H:%M:%S") .. "] " .. msg,
-        TextColor3 = logC[color] or P.t1, TextSize = 10, Font = Fc,
-        TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true,
-        AutomaticSize = Enum.AutomaticSize.Y,
-        LayoutOrder = termIdx, Parent = terminal,
-    })
-    task.defer(function()
-        terminal.CanvasPosition = Vector2.new(0, terminal.AbsoluteCanvasSize.Y)
-    end)
+color = color or "white"
+termIdx = termIdx + 1
+mk("TextLabel", {
+Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1,
+Text = "[" .. os.date("%H:%M:%S") .. "] " .. msg,
+TextColor3 = logC[color] or P.t1, TextSize = 10, Font = Fc,
+TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true,
+AutomaticSize = Enum.AutomaticSize.Y,
+LayoutOrder = termIdx, Parent = terminal,
+})
+task.defer(function()
+terminal.CanvasPosition = Vector2.new(0, terminal.AbsoluteCanvasSize.Y)
+end)
 end
 
 function API:ClearLog()
-    for _, c in ipairs(terminal:GetChildren()) do
-        if c:IsA("TextLabel") then c:Destroy() end
-    end
-    termIdx = 0
+for _, c in ipairs(terminal:GetChildren()) do
+if c:IsA("TextLabel") then c:Destroy() end
+end
+termIdx = 0
 end
 
 function API:SetProgress(cur, max)
-    max = max or 1
-    local pct = max > 0 and cur / max or 0
-    TS:Create(progFill, TweenInfo.new(0.2), {
-        Size = UDim2.new(math.clamp(pct, 0, 1), 0, 1, 0),
-    }):Play()
-    progLbl.Text = string.format("%d / %d  (%d%%)", cur, max, math.floor(pct * 100))
+max = max or 1
+local pct = max > 0 and cur / max or 0
+TS:Create(progFill, TweenInfo.new(0.2), {
+Size = UDim2.new(math.clamp(pct, 0, 1), 0, 1, 0),
+}):Play()
+progLbl.Text = string.format("%d / %d (%d%%)", cur, max, math.floor(pct * 100))
 end
 
 function API:SetStats(s)
-    local parts = {}
-    if s.total   then parts[#parts + 1] = "Found: " .. s.total end
-    if s.ok      then parts[#parts + 1] = "Done: " .. s.ok end
-    if s.fail    then parts[#parts + 1] = "Failed: " .. s.fail end
-    if s.remotes then parts[#parts + 1] = "Remotes: " .. s.remotes end
-    if s.hooks   then parts[#parts + 1] = "Hooks: " .. s.hooks end
-    statsLbl.Text = table.concat(parts, "   ")
+local parts = {}
+if s.total then parts[#parts + 1] = "Found: " .. s.total end
+if s.ok then parts[#parts + 1] = "Done: " .. s.ok end
+if s.fail then parts[#parts + 1] = "Failed: " .. s.fail end
+if s.remotes then parts[#parts + 1] = "Remotes: " .. s.remotes end
+if s.hooks then parts[#parts + 1] = "Hooks: " .. s.hooks end
+statsLbl.Text = table.concat(parts, " ")
 end
 
 function API:SetPhase(text)
-    phaseLbl.Text = "Phase: " .. tostring(text)
+phaseLbl.Text = "Phase: " .. tostring(text)
 end
 
 function API:SetStatus(text)
-    statusLbl.Text = text
+statusLbl.Text = text
 end
 
 function API:SetBadge(text, color)
-    badge.Text = text
-    badge.TextColor3 = logC[color] or P.ok
-    badge.BackgroundColor3 = logC[color] or P.ok
+badge.Text = text
+badge.TextColor3 = logC[color] or P.ok
+badge.BackgroundColor3 = logC[color] or P.ok
 end
 
 function API:SetRunning(running)
-    btnStart.Visible = not running
-    btnStop.Visible = running
-    pulseActive = running
+btnStart.Visible = not running
+btnStop.Visible = running
+pulseActive = running
 
-    if running then
-        badge.Text = "LIVE"
-        badge.TextColor3 = P.acc
-        badge.BackgroundColor3 = P.acc
-        switchPage(2)
-        task.spawn(function()
-            while pulseActive do
-                TS:Create(badge, TweenInfo.new(0.5), {BackgroundTransparency = 0.4}):Play()
-                task.wait(0.5)
-                if not pulseActive then break end
-                TS:Create(badge, TweenInfo.new(0.5), {BackgroundTransparency = 0.85}):Play()
-                task.wait(0.5)
-            end
-        end)
-    else
-        badge.Text = "Done"
-        badge.TextColor3 = P.ok
-        badge.BackgroundColor3 = P.ok
-        badge.BackgroundTransparency = 0.8
-    end
+if running then
+    badge.Text = "LIVE"
+    badge.TextColor3 = P.acc
+    badge.BackgroundColor3 = P.acc
+    switchPage(2)
+    task.spawn(function()
+        while pulseActive do
+            TS:Create(badge, TweenInfo.new(0.5), {BackgroundTransparency = 0.4}):Play()
+            task.wait(0.5)
+            if not pulseActive then break end
+            TS:Create(badge, TweenInfo.new(0.5), {BackgroundTransparency = 0.85}):Play()
+            task.wait(0.5)
+        end
+    end)
+else
+    badge.Text = "Done"
+    badge.TextColor3 = P.ok
+    badge.BackgroundColor3 = P.ok
+    badge.BackgroundTransparency = 0.8
+end
 end
 
 function API:ShowPage(n)
-    switchPage(n)
+switchPage(n)
 end
 
 function API:Destroy()
-    pulseActive = false
-    gui:Destroy()
+pulseActive = false
+gui:Destroy()
 end
 
 -- wire buttons
 btnStart.MouseButton1Click:Connect(function()
-    if API.OnStart then API.OnStart() end
+if API.OnStart then API.OnStart() end
 end)
 btnStop.MouseButton1Click:Connect(function()
-    if API.OnStop then API.OnStop() end
+if API.OnStop then API.OnStop() end
 end)
 btnSave.MouseButton1Click:Connect(function()
-    if API.OnSaveInstance then API.OnSaveInstance() end
+if API.OnSaveInstance then API.OnSaveInstance() end
 end)
 
 return API
